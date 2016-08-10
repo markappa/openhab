@@ -82,7 +82,9 @@ public class GPIOGenericBindingProvider extends AbstractGenericBindingProvider i
 
     private static final Logger logger = LoggerFactory.getLogger(GPIOGenericBindingProvider.class);
     
-    private String initialOutValue = INITIAL_UNDEFINED;
+    /* define INITIAL_UNDEFINED high enough not to clash with GPIOPin directions */
+    private static final int INITIAL_UNDEFINED = 100;
+    private int initialOutValue = INITIAL_UNDEFINED;
 
     public String getBindingType() {
         return "gpio";
@@ -108,8 +110,10 @@ public class GPIOGenericBindingProvider extends AbstractGenericBindingProvider i
 
         GPIOPinBindingConfig config = new GPIOPinBindingConfig();
 
-        /* Configuration string should be in the form 
-           "pin:PIN_NUMBER [debounce:DEBOUNCE_INTERVAL] [activelow:yes|no] [force:yes|no] [initial:high|low]" */
+        /**
+         * Configuration string should be in the form 
+         * "pin:PIN_NUMBER [debounce:DEBOUNCE_INTERVAL] [activelow:yes|no] [force:yes|no] [initial:high|low]" 
+         */
         String[] properties = bindingConfig.split(" ");
 
         if (properties.length > 4) {
@@ -222,6 +226,10 @@ public class GPIOGenericBindingProvider extends AbstractGenericBindingProvider i
             if(initialOutValue == INITIAL_UNDEFINED) {
                 config.direction = GPIOPin.DIRECTION_OUT;
             } else {
+                /**
+                 * sysfs GPIO interface allows to use initial value instead of 'out' direction
+                 * and this is correctly implemented in openhab.io.gpio
+                 */
                 config.direction = initialOutValue;
             }
         }
